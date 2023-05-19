@@ -30,6 +30,13 @@ const client = new MongoClient(uri, {
       // Connect the client to the server	(optional starting in v4.7)
       await client.connect();
         const toyCollection=client.db('sportsVillageDB').collection('toys')
+
+      app.get('/toys', async(req,res)=>{
+        const cursor = toyCollection.find();
+        const result = await cursor.toArray();
+        res.send(result)
+      })
+
       app.post('/toys', async(req,res)=>{
         const toy=req.body
         const result = await toyCollection.insertOne(toy);
