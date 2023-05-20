@@ -29,7 +29,12 @@ const client = new MongoClient(uri, {
     try {
       // Connect the client to the server	(optional starting in v4.7)
       await client.connect();
+        const categoryCollection=client.db('sportsVillageDB').collection('category')
         const toyCollection=client.db('sportsVillageDB').collection('toys')
+      app.get('/categories', async(req,res)=>{
+        const result = await categoryCollection.find().toArray();
+        res.send(result)
+      })
       app.post('/toys', async(req,res)=>{
         const toy=req.body
         const result = await toyCollection.insertOne(toy);
@@ -47,14 +52,44 @@ const client = new MongoClient(uri, {
       app.get('/toys/:id', async(req,res)=>{
         const id=req.params.id
         const filter={_id:new ObjectId(id)}
-        const result = await toyCollection.findOne(filter);
+        const result = await toyCollection.findOne(filter)
         res.send(result)
       })
 
+      app.put('/toys/:id', async(req,res)=>{
+        const id=req.params.id
+        const filter={_id:new ObjectId(id)}
+        const options = { upsert: true }
+        const updateToys=req.body
+        const newToys = {
+          $set: {
+            toyName:updateToys.toyName,
+            category:updateToys.quantity,
+            price:updateToys.price,
+            rating:updateToys.rating,
+            qty:updateToys.qty,
+            toyImg:updateToys.toyImg,
+            details:updateToys.details
+          },
+        };
+       const result = await toyCollection.updateOne(filter, newToys, options);
+       res.send(result)
+      })
+
+      //delete
       app.delete('/toys/:id', async(req,res)=>{
         const id=req.params.id;
         const query={_id: new ObjectId(id)}
         const result=await toyCollection.deleteOne(query)
+        res.send(result)
+      })
+      //search 
+   
+      app.get('/toySearch/:text', async(req,res)=>{
+        const searchText=req.params.text;
+        const result=await toyCollection.find({
+          $or:[{toyName:{$regex:searchText,$options:'i'}}
+        ]}).toArray()
         res.send(result)
       })
       // Send a ping to confirm a successful connection
