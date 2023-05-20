@@ -30,16 +30,31 @@ const client = new MongoClient(uri, {
       // Connect the client to the server	(optional starting in v4.7)
       await client.connect();
         const toyCollection=client.db('sportsVillageDB').collection('toys')
-
-      app.get('/toys', async(req,res)=>{
-        const cursor = toyCollection.find();
-        const result = await cursor.toArray();
-        res.send(result)
-      })
-
       app.post('/toys', async(req,res)=>{
         const toy=req.body
         const result = await toyCollection.insertOne(toy);
+        res.send(result)
+      })
+      app.get('/toys', async(req,res)=>{
+        let query={}
+        if(req.query?.email){
+          query={sellerEmail:req.query.email}
+        }
+        const result = await toyCollection.find(query).toArray();
+        res.send(result)
+      })
+      //update 
+      app.get('/toys/:id', async(req,res)=>{
+        const id=req.params.id
+        const filter={_id:new ObjectId(id)}
+        const result = await toyCollection.findOne(filter);
+        res.send(result)
+      })
+
+      app.delete('/toys/:id', async(req,res)=>{
+        const id=req.params.id;
+        const query={_id: new ObjectId(id)}
+        const result=await toyCollection.deleteOne(query)
         res.send(result)
       })
       // Send a ping to confirm a successful connection
