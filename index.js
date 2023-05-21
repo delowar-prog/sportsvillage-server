@@ -28,7 +28,7 @@ const client = new MongoClient(uri, {
   async function run() {
     try {
       // Connect the client to the server	(optional starting in v4.7)
-      await client.connect();
+      client.connect();
         const categoryCollection=client.db('sportsVillageDB').collection('category')
         const toyCollection=client.db('sportsVillageDB').collection('toys')
       app.get('/categories', async(req,res)=>{
@@ -41,11 +41,19 @@ const client = new MongoClient(uri, {
         res.send(result)
       })
       app.get('/toys', async(req,res)=>{
+        const limit=20
         let query={}
         if(req.query?.email){
           query={sellerEmail:req.query.email}
         }
-        const result = await toyCollection.find(query).toArray();
+        const result = await toyCollection.find(query).limit(limit).toArray();
+        res.send(result)
+      })
+      // category wise data
+      app.get('/category/:catname', async(req,res)=>{
+        const catname=req.params.catname
+        const query={category:catname}
+        const result = await toyCollection.findOne(query)
         res.send(result)
       })
       //update 
@@ -64,7 +72,7 @@ const client = new MongoClient(uri, {
         const newToys = {
           $set: {
             toyName:updateToys.toyName,
-            category:updateToys.quantity,
+            category:updateToys.category,
             price:updateToys.price,
             rating:updateToys.rating,
             qty:updateToys.qty,
