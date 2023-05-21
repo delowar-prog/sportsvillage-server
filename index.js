@@ -46,7 +46,7 @@ const client = new MongoClient(uri, {
         if(req.query?.email){
           query={sellerEmail:req.query.email}
         }
-        const result = await toyCollection.find(query).limit(limit).toArray();
+        const result = await toyCollection.find(query).limit(limit).sort({ price: -1 }).toArray();
         res.send(result)
       })
       // category wise data
